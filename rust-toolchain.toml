@@ -1,0 +1,4 @@
+[toolchain]
+# This project builds with the GNU (MinGW) toolchain so it does not require
+# the MSVC linker / Visual Studio Build Tools.
+channel = "stable-x86_64-pc-windows-gnu"
