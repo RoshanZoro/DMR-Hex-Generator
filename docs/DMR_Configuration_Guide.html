@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Practical Guide to Configuring a DMR Radio</title>
+<style>
+  :root{
+    --bg:#f6f7f9;
+    --surface:#ffffff;
+    --surface-2:#f0f2f5;
+    --ink:#1d2530;
+    --ink-soft:#5a6573;
+    --line:#e3e7ec;
+    --brand:#2563eb;
+    --brand-soft:#e8f0fe;
+    --accent:#0ea5a4;
+    --warn-bg:#fff7ed;--warn-line:#f59e0b;--warn-ink:#7c4a03;
+    --tip-bg:#ecfdf5;--tip-line:#10b981;--tip-ink:#055f46;
+    --note-bg:#eff6ff;--note-line:#3b82f6;--note-ink:#1e40af;
+    --shadow:0 1px 2px rgba(16,24,40,.04),0 8px 24px rgba(16,24,40,.06);
+    --radius:14px;
+    --mono:"SFMono-Regular",ui-monospace,"Cascadia Code","Consolas",monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  html[data-theme="dark"]{
+    --bg:#0e1217;--surface:#161b22;--surface-2:#1c232c;--ink:#e6edf3;--ink-soft:#9aa7b4;
+    --line:#283039;--brand:#5b9bff;--brand-soft:#16243d;--accent:#2dd4bf;
+    --warn-bg:#2a1f0e;--warn-line:#d98a17;--warn-ink:#f4c66b;
+    --tip-bg:#0f241c;--tip-line:#1f9d72;--tip-ink:#7ee2bd;
+    --note-bg:#0f1d33;--note-line:#3b82f6;--note-ink:#9ec2ff;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.4);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;font-size:17px;-webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--brand);text-decoration:none}
+  a:hover{text-decoration:underline}
+
+  /* ---- Header ---- */
+  header.site{
+    position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--surface) 88%,transparent);
+    backdrop-filter:saturate(160%) blur(10px);border-bottom:1px solid var(--line);
+  }
+  .bar{max-width:1180px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;gap:14px}
+  .logo{display:flex;align-items:center;gap:11px;font-weight:700;letter-spacing:-.2px}
+  .logo .glyph{
+    width:34px;height:34px;border-radius:9px;display:grid;place-items:center;
+    background:linear-gradient(135deg,var(--brand),var(--accent));color:#fff;flex:none;
+  }
+  .logo .glyph svg{width:20px;height:20px}
+  .logo small{display:block;font-weight:500;color:var(--ink-soft);font-size:12px;letter-spacing:.3px}
+  .bar .spacer{flex:1}
+  .toggle{
+    border:1px solid var(--line);background:var(--surface);color:var(--ink-soft);
+    width:40px;height:40px;border-radius:10px;cursor:pointer;display:grid;place-items:center;
+    transition:.2s;
+  }
+  .toggle:hover{color:var(--ink);border-color:var(--brand)}
+  .toggle svg{width:19px;height:19px}
+
+  /* ---- Hero ---- */
+  .hero{max-width:1180px;margin:0 auto;padding:64px 24px 40px}
+  .eyebrow{color:var(--accent);font-weight:700;letter-spacing:1.4px;text-transform:uppercase;font-size:12.5px;margin:0 0 14px}
+  .hero h1{font-size:clamp(32px,5vw,52px);line-height:1.07;letter-spacing:-1px;margin:0 0 18px;max-width:16ch}
+  .hero p.lead{font-size:20px;color:var(--ink-soft);max-width:62ch;margin:0}
+  .meta-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:28px}
+  .pill{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:7px 15px;font-size:13.5px;color:var(--ink-soft);box-shadow:var(--shadow)}
+  .pill b{color:var(--ink)}
+
+  /* ---- Layout ---- */
+  .wrap{max-width:1180px;margin:0 auto;padding:0 24px 100px;display:grid;grid-template-columns:248px 1fr;gap:48px;align-items:start}
+  nav.toc{position:sticky;top:90px;font-size:14.5px}
+  nav.toc .title{font-size:12px;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-soft);font-weight:700;margin:0 0 12px;padding-left:14px}
+  nav.toc ol{list-style:none;margin:0;padding:0;border-left:2px solid var(--line)}
+  nav.toc li a{display:block;padding:7px 0 7px 14px;color:var(--ink-soft);border-left:2px solid transparent;margin-left:-2px;transition:.15s}
+  nav.toc li a:hover{color:var(--ink);text-decoration:none}
+  nav.toc li a.active{color:var(--brand);border-left-color:var(--brand);font-weight:600}
+
+  main{min-width:0}
+  section{margin:0 0 56px;scroll-margin-top:90px}
+  section > h2{font-size:28px;letter-spacing:-.5px;margin:0 0 6px;display:flex;align-items:baseline;gap:12px}
+  section > h2 .num{font-size:15px;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums}
+  section .sub{color:var(--ink-soft);margin:0 0 24px;font-size:17px}
+  h3{font-size:20px;letter-spacing:-.2px;margin:34px 0 10px}
+  p{margin:0 0 16px}
+  ul,ol.steps{margin:0 0 16px;padding-left:22px}
+  li{margin:6px 0}
+
+  code{font-family:var(--mono);background:var(--surface-2);border:1px solid var(--line);padding:1.5px 6px;border-radius:6px;font-size:.86em}
+
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+  .lede-card{padding:22px 24px;margin:0 0 26px}
+
+  /* ---- Callouts ---- */
+  .callout{border-radius:12px;padding:15px 18px 15px 16px;margin:20px 0;border:1px solid var(--line);display:flex;gap:13px;font-size:15.5px}
+  .callout .ic{flex:none;width:22px;height:22px;margin-top:1px}
+  .callout p{margin:0}
+  .callout strong{display:block;margin-bottom:2px}
+  .note{background:var(--note-bg);border-color:color-mix(in srgb,var(--note-line) 40%,transparent)}
+  .note .ic,.note strong{color:var(--note-ink)}
+  .tip{background:var(--tip-bg);border-color:color-mix(in srgb,var(--tip-line) 40%,transparent)}
+  .tip .ic,.tip strong{color:var(--tip-ink)}
+  .warn{background:var(--warn-bg);border-color:color-mix(in srgb,var(--warn-line) 45%,transparent)}
+  .warn .ic,.warn strong{color:var(--warn-ink)}
+
+  /* ---- Tables ---- */
+  .table-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);margin:22px 0}
+  table{border-collapse:collapse;width:100%;font-size:15px;background:var(--surface)}
+  th,td{text-align:left;padding:12px 16px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{background:var(--surface-2);font-weight:650;font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--ink-soft)}
+  tr:last-child td{border-bottom:none}
+  td code{white-space:nowrap}
+
+  /* ---- Step cards ---- */
+  .flow{counter-reset:step;display:grid;gap:14px;margin:24px 0}
+  .step{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px 22px 20px 64px;position:relative}
+  .step::before{
+    counter-increment:step;content:counter(step);position:absolute;left:18px;top:18px;
+    width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--brand),var(--accent));
+    color:#fff;font-weight:700;display:grid;place-items:center;font-size:15px;
+  }
+  .step h3{margin:0 0 6px;font-size:18px}
+  .step p{margin:0;color:var(--ink-soft);font-size:15.5px}
+  .step p + p{margin-top:8px}
+
+  /* ---- Glossary ---- */
+  dl.gloss{margin:18px 0;display:grid;gap:0}
+  dl.gloss > div{padding:16px 0;border-bottom:1px solid var(--line);display:grid;grid-template-columns:200px 1fr;gap:20px}
+  dl.gloss > div:last-child{border-bottom:none}
+  dl.gloss dt{font-weight:650;color:var(--ink)}
+  dl.gloss dd{margin:0;color:var(--ink-soft);font-size:15.5px}
+
+  .kicker{font-size:13px;letter-spacing:.6px;text-transform:uppercase;color:var(--accent);font-weight:700;margin:0 0 8px}
+
+  footer.site{border-top:1px solid var(--line);background:var(--surface)}
+  .foot{max-width:1180px;margin:0 auto;padding:34px 24px;color:var(--ink-soft);font-size:14px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
+
+  @media(max-width:900px){
+    .wrap{grid-template-columns:1fr;gap:0}
+    nav.toc{display:none}
+    .hero{padding-top:44px}
+    dl.gloss > div{grid-template-columns:1fr;gap:4px}
+  }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="bar">
+    <div class="logo">
+      <span class="glyph" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 11a9 9 0 0 1 9-9"/><path d="M4 4 14 14"/><circle cx="5" cy="19" r="2"/><path d="M4 15a5 5 0 0 1 5 5"/></svg>
+      </span>
+      <span>DMR Field Manual<small>Configuring your radio, the right way</small></span>
+    </div>
+    <span class="spacer"></span>
+    <button class="toggle" id="themeBtn" aria-label="Toggle dark mode" title="Toggle theme">
+      <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+    </button>
+  </div>
+</header>
+
+<div class="hero">
+  <p class="eyebrow">Digital Mobile Radio · Setup Guide</p>
+  <h1>A clear, practical guide to programming a DMR radio</h1>
+  <p class="lead">DMR gives you crisp digital audio, two conversations on one frequency, and tidy contact management — but the first setup can feel dense. This guide walks through every concept and every step, in plain language, from a blank codeplug to a working radio.</p>
+  <div class="meta-row">
+    <span class="pill"><b>Level:</b> Beginner → Intermediate</span>
+    <span class="pill"><b>Read time:</b> ~20 min</span>
+    <span class="pill"><b>You'll need:</b> a radio, its CPS, a programming cable</span>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <nav class="toc" aria-label="Table of contents">
+    <p class="title">On this page</p>
+    <ol>
+      <li><a href="#basics">DMR in 5 minutes</a></li>
+      <li><a href="#concepts">Core building blocks</a></li>
+      <li><a href="#prep">Before you start</a></li>
+      <li><a href="#id">1 · Set your radio ID</a></li>
+      <li><a href="#contacts">2 · Build your contacts</a></li>
+      <li><a href="#rxgroups">3 · RX group lists</a></li>
+      <li><a href="#channels">4 · Create channels</a></li>
+      <li><a href="#zones">5 · Organize zones</a></li>
+      <li><a href="#scan">6 · Scan lists</a></li>
+      <li><a href="#write">7 · Write to the radio</a></li>
+      <li><a href="#matching">Making two radios talk</a></li>
+      <li><a href="#private">Private calls, done right</a></li>
+      <li><a href="#trouble">Troubleshooting</a></li>
+      <li><a href="#glossary">Glossary</a></li>
+    </ol>
+  </nav>
+
+  <main>
+
+    <section id="basics">
+      <h2><span class="num">§</span> DMR in 5 minutes</h2>
+      <p class="sub">What the technology actually does, before we touch any settings.</p>
+
+      <div class="card lede-card">
+        <p style="margin:0"><strong>DMR (Digital Mobile Radio)</strong> is an open digital voice standard. Instead of sending your voice as a raw analog signal, the radio digitizes it, packages it, and transmits it in precisely timed bursts. The result is clean audio that stays clear right up to the edge of range, plus features analog simply can't offer — text messaging, caller identification, and addressing calls to a specific person or group.</p>
+      </div>
+
+      <h3>The one idea that explains everything: time slots</h3>
+      <p>DMR uses <strong>TDMA</strong> — Time-Division Multiple Access. A single 12.5&nbsp;kHz channel is sliced into two alternating time slots, <strong>TS1</strong> and <strong>TS2</strong>. Two completely separate conversations can share one frequency without colliding, because each one only transmits during its own slot. This is also why a digital signal can sound like it "cuts in and out" at the fringe — you're hearing the gaps between bursts rather than analog static.</p>
+
+      <div class="callout note">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        <p><strong>Slots need a clock.</strong> On a repeater, the repeater broadcasts the master timing that keeps both slots aligned. Talking radio-to-radio without a repeater (<em>simplex</em>) there is no master clock, so direct mode effectively uses a single slot and the radios sync to each other on the fly.</p>
+      </div>
+    </section>
+
+    <section id="concepts">
+      <h2><span class="num">§</span> Core building blocks</h2>
+      <p class="sub">Six concepts do almost all the work. Learn these and the programming software stops being intimidating.</p>
+
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>Term</th><th>What it is</th><th>Why it matters</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Radio ID</strong></td><td>A unique number that identifies your radio on the network.</td><td>Every digital transmission carries it. Calls are addressed to and from these numbers.</td></tr>
+            <tr><td><strong>Color Code</strong></td><td>A value from <code>0</code>–<code>15</code>, the digital equivalent of a tone squelch.</td><td>Both ends <em>must</em> use the same color code or they won't hear each other.</td></tr>
+            <tr><td><strong>Time Slot</strong></td><td><code>TS1</code> or <code>TS2</code> — which half of the channel a call uses.</td><td>Must match between radios; set by the repeater or network plan.</td></tr>
+            <tr><td><strong>Talkgroup</strong></td><td>A group address many radios share to talk together.</td><td>Stored as a <em>Group Call</em> contact and assigned as a channel's transmit target.</td></tr>
+            <tr><td><strong>Contact</strong></td><td>A saved ID with a name and a call type (Group, Private, or All Call).</td><td>Defines <em>who</em> a transmission is addressed to.</td></tr>
+            <tr><td><strong>Channel</strong></td><td>One complete configuration: frequency, slot, color code, contact, and dozens of options.</td><td>The basic thing you turn the knob to. Everything else plugs into it.</td></tr>
+            <tr><td><strong>RX Group List</strong></td><td>The set of talkgroups a channel will <em>listen</em> to.</td><td>Lets one channel monitor several groups at once.</td></tr>
+            <tr><td><strong>Zone</strong></td><td>A folder of channels (radios cap how many channels a zone holds).</td><td>How you keep dozens of channels organized and reachable.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout tip">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1h6c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2Z"/></svg>
+        <p><strong>The mental model:</strong> A <em>contact</em> is who you talk to. A <em>channel</em> bundles a frequency with one contact and a pile of settings. A <em>zone</em> is a folder of channels. Build them in that order and nothing feels out of sequence.</p>
+      </div>
+    </section>
+
+    <section id="prep">
+      <h2><span class="num">§</span> Before you start</h2>
+      <p class="sub">A few minutes of prep saves a lot of backtracking.</p>
+
+      <ul>
+        <li><strong>Request a Radio ID.</strong> Amateur operators obtain a free ID from the global registry for ham DMR. Commercial and licensed-business use follows its own licensing and numbering — use the ID assigned to your system.</li>
+        <li><strong>Install the CPS.</strong> The <em>Customer Programming Software</em> is the desktop app that edits your radio's configuration. Use the version that matches your model and firmware.</li>
+        <li><strong>Get the right cable and driver.</strong> Many programming cables need a specific USB driver. Confirm the radio appears as a COM port before you try to read or write.</li>
+        <li><strong>Read &amp; back up first.</strong> Connect the radio, <em>read</em> its current configuration, and save that file untouched. This saved configuration is your <strong>codeplug</strong> — your safety net if anything goes wrong.</li>
+        <li><strong>Gather your frequency plan.</strong> Have your frequencies, color codes, time slots, and talkgroup numbers written down before you open the software.</li>
+      </ul>
+
+      <div class="callout warn">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>
+        <p><strong>Transmit only where you're authorized.</strong> Programming a frequency does not grant permission to use it. Stay within the bands, power limits, and privileges your license allows, and follow local regulations.</p>
+      </div>
+    </section>
+
+    <section id="id">
+      <h2><span class="num">1</span> Set your radio ID</h2>
+      <p class="sub">The single number that identifies you on every digital call.</p>
+      <p>In the CPS this lives in the general or DMR settings area, usually labeled <em>Radio ID</em> or <em>DMR ID</em>. Enter the ID assigned to your radio. Some radios support several IDs in an ID list and let each channel pick which one to use; for a typical setup, a single ID used everywhere is correct and avoids confusion.</p>
+      <div class="callout note">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        <p><strong>One radio, one identity.</strong> If your radio offers a per-channel ID override, leave every channel pointed at the same ID unless you have a specific reason not to. A mismatched per-channel ID is a classic source of "it transmits but the other end behaves oddly."</p>
+      </div>
+    </section>
+
+    <section id="contacts">
+      <h2><span class="num">2</span> Build your contacts</h2>
+      <p class="sub">Define who you can address before you build the channels that point at them.</p>
+
+      <p>A contact is just a name, an ID number, and a <strong>call type</strong>. Create one entry for every talkgroup and every individual you want to reach.</p>
+
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>Call type</th><th>Reaches</th><th>Typical use</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Group Call</strong></td><td>Everyone monitoring that talkgroup.</td><td>Nets, general chatter, the everyday default.</td></tr>
+            <tr><td><strong>Private Call</strong></td><td>One specific radio, by its ID.</td><td>A direct, one-to-one conversation.</td></tr>
+            <tr><td><strong>All Call</strong></td><td>Every radio that can hear the signal.</td><td>Announcements; use sparingly.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Give each contact a clear, short name — it's what shows on radios that have a display, and what you'll pick from lists later in the software. Double-check every ID number; a wrong digit means the call is addressed to nobody.</p>
+    </section>
+
+    <section id="rxgroups">
+      <h2><span class="num">3</span> RX group lists</h2>
+      <p class="sub">Decide which groups a channel should listen to, not just talk on.</p>
+      <p>A channel transmits to <em>one</em> contact, but it can <em>receive</em> several talkgroups at once. An <strong>RX group list</strong> is simply a named bundle of group contacts. Build a list that contains every talkgroup you want to hear on a given channel, then attach that list to the channel in the next step.</p>
+      <div class="callout tip">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1h6c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2Z"/></svg>
+        <p><strong>Keep it lean.</strong> Only put groups you genuinely want to hear into a list. An overstuffed RX list means constant interruptions from traffic you don't care about.</p>
+      </div>
+    </section>
+
+    <section id="channels">
+      <h2><span class="num">4</span> Create channels</h2>
+      <p class="sub">Where everything comes together. This is the table you'll spend the most time in.</p>
+
+      <p>Each channel is either <strong>digital</strong> (DMR) or <strong>analog</strong> (FM). The fields below are the ones that matter on a digital channel; analog channels swap the digital options for tone squelch (CTCSS/DCS).</p>
+
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>Field</th><th>What to enter</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Name</strong></td><td>A short, recognizable label. This is what you see when you turn the knob.</td></tr>
+            <tr><td><strong>RX Frequency</strong></td><td>The frequency you listen on.</td></tr>
+            <tr><td><strong>TX Frequency</strong></td><td>The frequency you transmit on. Same as RX for simplex; offset for a repeater.</td></tr>
+            <tr><td><strong>Channel Type</strong></td><td><code>Digital</code> for DMR, <code>Analog</code> for FM.</td></tr>
+            <tr><td><strong>Color Code</strong></td><td>Must match the other end / the repeater. <code>1</code> is a common default.</td></tr>
+            <tr><td><strong>Time Slot</strong></td><td><code>TS1</code> or <code>TS2</code> per your plan. Direct simplex generally uses slot 1.</td></tr>
+            <tr><td><strong>TX Contact</strong></td><td>The contact this channel calls when you key up — the heart of the channel.</td></tr>
+            <tr><td><strong>RX Group List</strong></td><td>The listen list you built in step 3.</td></tr>
+            <tr><td><strong>Power</strong></td><td>High or low. Use the least power that does the job.</td></tr>
+            <tr><td><strong>Admit Criteria</strong></td><td>When the radio is allowed to transmit — see below.</td></tr>
+            <tr><td><strong>TX Timeout (TOT)</strong></td><td>A safety limit that ends a stuck transmission after a set time.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Admit criteria, briefly</h3>
+      <p>This setting controls whether the radio checks the channel before transmitting:</p>
+      <ul>
+        <li><strong>Always</strong> — transmit immediately, no checking. Fine for simple simplex use.</li>
+        <li><strong>Channel Free</strong> — only transmit if the channel is idle. Polite; avoids stepping on others.</li>
+        <li><strong>Color Code Free</strong> — transmit only if the channel is free <em>and</em> carrying your color code. Best on shared repeaters.</li>
+      </ul>
+
+      <div class="callout warn">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>
+        <p><strong>The three things that must match.</strong> For two digital radios to hear each other, they need the same <em>frequency</em>, the same <em>color code</em>, and the same <em>time slot</em>. Any one of these wrong means silence — even though both radios show they're transmitting.</p>
+      </div>
+    </section>
+
+    <section id="zones">
+      <h2><span class="num">5</span> Organize zones</h2>
+      <p class="sub">Turn a long, flat channel list into something you can actually navigate.</p>
+      <p>A <strong>zone</strong> is a folder. Radios limit how many channels a zone can hold and how many you can reach from the front panel, so group channels logically — by location, by purpose, or by group. Add your channels to a zone <em>in the order you want to scroll through them</em>; most radios present channels in the sequence they appear in the zone.</p>
+      <div class="callout tip">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1h6c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2Z"/></svg>
+        <p><strong>Order on purpose.</strong> Put your most-used channels first and keep related channels adjacent. A zone whose channels jump around in number is confusing to scroll; arranging them in a clean, continuous sequence makes the radio far nicer to operate.</p>
+      </div>
+    </section>
+
+    <section id="scan">
+      <h2><span class="num">6</span> Scan lists</h2>
+      <p class="sub">Let the radio watch several channels and stop on whichever one comes alive.</p>
+      <p>A <strong>scan list</strong> is a set of channels the radio cycles through, pausing on any that has activity. Build a list, add the channels you want to monitor, optionally flag one or two as <em>priority</em> (checked more often), and assign the list to the channels that should scan. Keep scan lists focused — scanning too many channels makes the radio slow to land on the one you care about.</p>
+    </section>
+
+    <section id="write">
+      <h2><span class="num">7</span> Write to the radio</h2>
+      <p class="sub">Commit your work — carefully.</p>
+      <div class="flow">
+        <div class="step"><h3>Save the file</h3><p>Save your edited configuration under a clear, dated name. Keep the original backup from earlier untouched, so you can always roll back.</p></div>
+        <div class="step"><h3>Connect and confirm</h3><p>Plug in the cable and confirm the CPS sees the radio. Match the CPS version to the radio's firmware to avoid a corrupt write.</p></div>
+        <div class="step"><h3>Write the codeplug</h3><p>Use <em>Write</em> to send the configuration to the radio. Don't disconnect or power off mid-write.</p></div>
+        <div class="step"><h3>Test on the bench</h3><p>Verify on a known-good channel first: confirm you transmit and receive, then work through the rest before relying on it in the field.</p></div>
+      </div>
+      <div class="callout note">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        <p><strong>Iterate in the file, not on the radio.</strong> Make changes in the CPS, write, test, and repeat. Editing the saved configuration and re-writing is faster and safer than poking settings on the radio itself.</p>
+      </div>
+    </section>
+
+    <section id="matching">
+      <h2><span class="num">§</span> Making two radios talk</h2>
+      <p class="sub">The shortest path to a working contact between two digital radios.</p>
+      <p>Strip away the options and a working digital link needs only a handful of things to line up on both radios:</p>
+      <ol class="steps">
+        <li>Same <strong>RX/TX frequency</strong> (and the same simplex-vs-repeater offset).</li>
+        <li>Same <strong>color code</strong>.</li>
+        <li>Same <strong>time slot</strong>.</li>
+        <li>A <strong>TX contact</strong> that addresses the call where the other radio is listening.</li>
+        <li>Matching <strong>bandwidth</strong> and digital channel type on both ends.</li>
+      </ol>
+      <p>Get those five aligned and audio flows. Everything else — scan, zones, RX lists, power — is convenience layered on top.</p>
+
+      <div class="callout note">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        <p><strong>A note on simplex timing.</strong> Without a repeater providing a master clock, two radios have to sync to each other when a conversation starts cold. The very first transmission after a quiet channel can be partly clipped while they lock on — this is normal for direct-mode digital. Once a conversation is flowing it's seamless. A brief pause between keying up and speaking sidesteps it entirely.</p>
+      </div>
+    </section>
+
+    <section id="private">
+      <h2><span class="num">§</span> Private calls, done right</h2>
+      <p class="sub">Group calls are easy. Private calls trip almost everyone up — here's the whole picture in one place.</p>
+
+      <p>A <strong>private call</strong> is addressed to <em>one specific radio</em> by its unique Radio ID, instead of to a shared group. It's the digital equivalent of phoning a single person rather than announcing to a room. Conceptually simple — but the setup has a few non-obvious steps, and missing any one of them produces the same baffling symptom: your radio keys up, the indicator lights, and the other end stays silent.</p>
+
+      <div class="callout warn">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>
+        <p><strong>The one mistake everyone makes.</strong> Creating a private contact does <em>nothing</em> on its own. A contact just defines an address; it has no effect until a <em>channel</em> is told to transmit to it. The most common reason "private calls don't work" is that the contact exists but no channel actually points at it — so every press still goes out as whatever the channel was already set to.</p>
+      </div>
+
+      <h3>Setting one up — the four pieces</h3>
+      <div class="flow">
+        <div class="step"><h3>Create a Private Call contact</h3><p>Add a contact with call type <strong>Private Call</strong> and an ID equal to the <em>destination radio's</em> Radio ID — exactly, every digit. This is the address the call is sent to.</p></div>
+        <div class="step"><h3>Point a channel's TX Contact at it</h3><p>Open the channel you'll use and set its <strong>TX Contact</strong> to that private contact. This is the step people miss. The channel — not the contact list — decides who you call.</p></div>
+        <div class="step"><h3>Confirm your own Radio ID is correct</h3><p>Your radio announces itself by its own ID. If that's wrong, the far radio sees a call from the wrong source — and on the return call, <em>your</em> radio may not recognize it's being addressed.</p></div>
+        <div class="step"><h3>Match the radio layer</h3><p>Same <strong>frequency</strong>, <strong>color code</strong>, and <strong>time slot</strong> as the other radio — exactly as for any digital contact. A private call obeys these rules too.</p></div>
+      </div>
+
+      <h3>How receiving actually works (the part nobody explains)</h3>
+      <p>This is the detail missing from most guides: <strong>a radio receives a private call automatically whenever the call is addressed to its own Radio ID.</strong> You do <em>not</em> add anything to an RX group list to receive private calls — RX group lists govern <em>talkgroup</em> (group-call) reception only. As long as your Radio ID is set correctly and the channel's frequency, color code, and slot match, an incoming private call to your ID will open the speaker on its own.</p>
+
+      <div class="callout note">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        <p><strong>Two IDs are always in play.</strong> Every call has a <em>source</em> (your radio's own ID) and a <em>destination</em> (the TX contact). A private call is delivered to the radio whose own ID equals the destination. So both ends must have their own ID set correctly <em>and</em> a contact pointing at the other — it's symmetric: each radio needs a channel addressing the other.</p>
+      </div>
+
+      <h3>"It transmits but I hear nothing" — the checklist</h3>
+      <p>The indicator lighting up only proves your radio is transmitting; it says nothing about whether the call was addressed correctly or whether the far radio can decode it. Work down this list:</p>
+      <ul>
+        <li><strong>Destination ID</strong> — does the contact's ID exactly match the other radio's Radio ID? A single wrong digit sends the call to nobody.</li>
+        <li><strong>Channel assignment</strong> — is that contact actually set as the channel's TX Contact, not just sitting in the contact list?</li>
+        <li><strong>Your own ID</strong> — is the receiving radio's own Radio ID set to the value being called?</li>
+        <li><strong>Color code &amp; time slot</strong> — both must match, or the receiver's squelch never opens.</li>
+        <li><strong>Frequency &amp; bandwidth</strong> — identical on both ends, both set to digital.</li>
+      </ul>
+
+      <h3>Private Call Confirmed — the optional handshake</h3>
+      <p>Many radios offer a <strong>Private Call Confirmed</strong> option. When enabled, keying up first sends a short setup request and waits for the other radio to acknowledge before letting you talk:</p>
+      <ul>
+        <li>A <strong>talk-permit tone</strong> means the link is confirmed — the other radio answered, so it's powered on and in range. Then you speak.</li>
+        <li>A <strong>reject tone</strong> means no acknowledgment — the other radio is off, out of range, or busy — and you won't transmit that over.</li>
+      </ul>
+      <p>That makes it a handy presence-and-range check before you rely on the channel. The trade-offs: a brief delay and a tone before each over, and if the other radio can't be reached you simply can't key up. Leaving it off lets you transmit unconditionally, at the cost of no confirmation. Either is valid — pick based on whether you'd rather always be able to talk, or always know the call got through.</p>
+
+      <div class="callout tip">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1h6c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2Z"/></svg>
+        <p><strong>On simplex, expect the first over to need a moment.</strong> With no repeater clock, the two radios sync to each other when a conversation starts cold, so the very first transmission can be clipped. The confirmed-call handshake also helps here, since the link is established before your voice begins. Once you're going back and forth, it's seamless.</p>
+      </div>
+    </section>
+
+    <section id="trouble">
+      <h2><span class="num">§</span> Troubleshooting</h2>
+      <p class="sub">The usual suspects, and what to check first.</p>
+
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>Symptom</th><th>Most likely cause</th><th>Fix</th></tr></thead>
+          <tbody>
+            <tr><td>Transmit indicator lights, but the other radio hears nothing.</td><td>Color code, time slot, or addressing mismatch — the receiver's squelch never opens.</td><td>Confirm color code, slot, and frequency match exactly, and that the call is addressed correctly.</td></tr>
+            <tr><td>First few words of a conversation get cut off.</td><td>Normal simplex sync, or a short TX preamble.</td><td>Pause briefly after keying up; increasing TX preamble can help.</td></tr>
+            <tr><td>You can transmit but never receive a group's traffic.</td><td>That talkgroup isn't in the channel's RX group list.</td><td>Add the group to the RX list and reassign it to the channel.</td></tr>
+            <tr><td>Audio sounds robotic or drops in bursts.</td><td>Weak signal at the digital edge of range.</td><td>Improve antenna/position, raise power, or move closer.</td></tr>
+            <tr><td>The radio won't transmit at all on a channel.</td><td>Admit criteria is blocking, or TX is inhibited on that channel.</td><td>Check admit criteria and any transmit-prohibit flag.</td></tr>
+            <tr><td>CPS write fails or the radio acts strangely afterward.</td><td>CPS/firmware version mismatch.</td><td>Match versions, re-read the radio, and write a known-good backup.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="glossary">
+      <h2><span class="num">§</span> Glossary</h2>
+      <p class="sub">Quick definitions for the terms that come up most.</p>
+      <dl class="gloss">
+        <div><dt>Admit Criteria</dt><dd>The rule that decides whether the radio is allowed to transmit on a channel (always, only when free, or only when free on your color code).</dd></div>
+        <div><dt>Bandwidth</dt><dd>The width of the channel. DMR voice uses 12.5&nbsp;kHz.</dd></div>
+        <div><dt>Codeplug</dt><dd>The complete configuration file for a radio — every channel, contact, zone, and setting in one package.</dd></div>
+        <div><dt>Color Code</dt><dd>A 0–15 value that acts as a digital squelch; both ends must match to communicate.</dd></div>
+        <div><dt>CPS</dt><dd>Customer Programming Software — the desktop app used to edit and write a codeplug.</dd></div>
+        <div><dt>CTCSS / DCS</dt><dd>Sub-audible tone and digital-coded squelch used on <em>analog</em> channels, the FM analogue of a color code.</dd></div>
+        <div><dt>Simplex</dt><dd>Radio-to-radio operation on a single frequency, with no repeater in between.</dd></div>
+        <div><dt>TDMA</dt><dd>Time-Division Multiple Access — the scheme that splits one DMR channel into two time slots.</dd></div>
+        <div><dt>Talkgroup</dt><dd>A shared group address that lets many radios converse together.</dd></div>
+        <div><dt>Time Slot (TS1/TS2)</dt><dd>One of the two interleaved time windows on a DMR channel.</dd></div>
+        <div><dt>TOT</dt><dd>Time-Out Timer — ends a transmission automatically after a set duration to prevent a stuck mic.</dd></div>
+        <div><dt>Zone</dt><dd>A folder grouping a set of channels for easy navigation on the radio.</dd></div>
+      </dl>
+    </section>
+
+  </main>
+</div>
+
+<footer class="site">
+  <div class="foot">
+    <span>DMR Field Manual · A practical configuration guide.</span>
+    <span>Always operate within your license and local regulations.</span>
+  </div>
+</footer>
+
+<script>
+  // Theme toggle with persistence
+  (function(){
+    var root=document.documentElement, btn=document.getElementById('themeBtn');
+    var saved=null;
+    try{saved=localStorage.getItem('dmr-theme');}catch(e){}
+    if(saved){root.setAttribute('data-theme',saved);}
+    else if(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches){root.setAttribute('data-theme','dark');}
+    function icon(){
+      var dark=root.getAttribute('data-theme')==='dark';
+      document.getElementById('themeIcon').innerHTML = dark
+        ? '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/>'
+        : '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>';
+    }
+    icon();
+    btn.addEventListener('click',function(){
+      var dark=root.getAttribute('data-theme')==='dark';
+      var next=dark?'light':'dark';
+      root.setAttribute('data-theme',next);
+      try{localStorage.setItem('dmr-theme',next);}catch(e){}
+      icon();
+    });
+  })();
+
+  // Scroll-spy for the table of contents
+  (function(){
+    var links=[].slice.call(document.querySelectorAll('nav.toc a'));
+    var map={};
+    links.forEach(function(l){map[l.getAttribute('href').slice(1)]=l;});
+    var sections=[].slice.call(document.querySelectorAll('main section'));
+    var obs=new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){
+          links.forEach(function(l){l.classList.remove('active');});
+          if(map[e.target.id])map[e.target.id].classList.add('active');
+        }
+      });
+    },{rootMargin:'-20% 0px -70% 0px',threshold:0});
+    sections.forEach(function(s){obs.observe(s);});
+  })();
+</script>
+</body>
+</html>
