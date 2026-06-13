@@ -61,8 +61,8 @@ pub struct KeygenApp {
 
 impl KeygenApp {
     pub fn new(cc: &CreationContext<'_>) -> Self {
-        // eframe sets the default style's dark_mode from the OS theme before
-        // calling us, so this reflects the system preference at startup.
+        // eframe seeds the default style's dark_mode from the OS theme, so it
+        // reflects the system preference at startup.
         let theme_override = std::env::var("DMR_THEME")
             .ok()
             .map(|t| !t.eq_ignore_ascii_case("light"));
@@ -93,10 +93,9 @@ impl KeygenApp {
         }
     }
 
-    /// Follow the OS light/dark preference and (re)apply our theme each frame.
-    ///
-    /// eframe re-applies the OS theme's default visuals every frame, so we must
-    /// re-assert our styling here or our widget colors get clobbered.
+    /// Follow the OS light/dark preference and re-apply the theme each frame.
+    /// eframe re-asserts its default visuals every frame, so we must override
+    /// them here or the widget colors get clobbered.
     fn sync_theme(&mut self, ctx: &egui::Context) {
         let dark = self.theme_override.unwrap_or_else(|| {
             ctx.input(|i| i.raw.system_theme)
@@ -465,7 +464,6 @@ impl KeygenApp {
             .rounding(9.0)
             .inner_margin(egui::Margin::symmetric(12.0, 9.0))
             .show(ui, |ui| {
-                // Line 1: index badge + the key (wraps if the window is narrow).
                 ui.horizontal_wrapped(|ui| {
                     ui.label(
                         RichText::new(format!("{:02}", idx + 1))
@@ -482,7 +480,7 @@ impl KeygenApp {
                                 .selectable(true),
                         );
                     } else {
-                        // Latin-1 middots (not emoji glyphs) for a clean mask.
+                        // Middots render from the main font, unlike bullet glyphs.
                         let mask: String = "\u{00B7}".repeat(hex_len.min(64));
                         ui.label(RichText::new(mask).monospace().size(14.0).color(p.muted));
                     }
@@ -490,9 +488,8 @@ impl KeygenApp {
 
                 ui.add_space(7.0);
 
-                // Line 2: right-aligned actions, so they never collide with the
-                // key. Wrapped in a horizontal so the row keeps a single-line
-                // height instead of expanding to fill the scroll area.
+                // The horizontal wrapper keeps this action row a single line
+                // instead of expanding to fill the scroll area.
                 ui.horizontal(|ui| {
                     ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
                         if ui

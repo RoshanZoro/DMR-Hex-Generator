@@ -1,7 +1,5 @@
-//! Clean, professional theming with matching light and dark palettes.
-//!
-//! The active palette is chosen from the OS theme by the app and threaded
-//! through the UI, so colors stay consistent and switch live with the system.
+//! Theming: matching light and dark palettes, selected from the OS preference
+//! and threaded through the UI.
 
 use egui::{Color32, Rounding, Stroke, Style, Visuals};
 

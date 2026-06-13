@@ -1,10 +1,6 @@
-// DMR AES Key Generator
-//
-// A security-focused desktop tool for generating cryptographically random
-// hex keys suitable for DMR AES encryption. Keys live only in RAM, are
-// zeroized when dropped, memory-locked against swap, and never touch disk.
+// DMR AES key generator: cryptographically random hex keys held only in memory.
 
-// Hide the console window on Windows release builds (GUI only).
+// Hide the console window on Windows release builds.
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod app;

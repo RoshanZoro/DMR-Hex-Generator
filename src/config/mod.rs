@@ -1,5 +1,4 @@
-//! User-configurable options. Held only in RAM; never persisted to disk so
-//! that nothing about a session survives the process.
+//! User options, held in memory only and never persisted to disk.
 
 /// AES key strength, expressed by raw key size.
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -9,7 +8,6 @@ pub enum KeySize {
 }
 
 impl KeySize {
-    /// Raw key length in bytes.
     pub fn bytes(self) -> usize {
         match self {
             KeySize::Aes128 => 16,
@@ -17,7 +15,6 @@ impl KeySize {
         }
     }
 
-    /// Length of the hex representation in characters.
     pub fn hex_len(self) -> usize {
         self.bytes() * 2
     }
@@ -30,29 +27,21 @@ impl KeySize {
     }
 }
 
-/// Hard limits to keep the UI responsive and memory bounded.
 pub const MAX_KEYS: usize = 100;
 pub const MIN_KEYS: usize = 1;
 
 #[derive(Clone)]
 pub struct Config {
-    /// How many keys to generate per click.
     pub num_keys: usize,
-    /// AES key strength.
     pub key_size: KeySize,
-    /// Render hex in uppercase (DMR CPS programs vary; uppercase is common).
+    /// DMR programming software varies; uppercase hex is the common default.
     pub uppercase: bool,
-    /// Start with keys masked on screen (reveal individually).
     pub start_hidden: bool,
 
-    /// Wipe the clipboard automatically after a copy.
     pub clipboard_wipe_enabled: bool,
-    /// Seconds before the clipboard is wiped.
     pub clipboard_wipe_secs: u64,
 
-    /// Drop all generated keys from RAM automatically after a delay.
     pub auto_clear_enabled: bool,
-    /// Seconds before keys are auto-cleared.
     pub auto_clear_secs: u64,
 }
 

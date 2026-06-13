@@ -1,15 +1,11 @@
-//! Clipboard handling with verified auto-wipe.
-//!
-//! Copying a secret to the system clipboard is inherently risky (clipboard
-//! history managers, other processes). We mitigate by remembering exactly what
-//! we placed there and wiping it after a timeout — but only if the clipboard
-//! still holds *our* value, so we never clobber something the user copied since.
+//! Clipboard writes with verified auto-wipe: the wipe only fires if the
+//! clipboard still holds the value we wrote, so unrelated content is preserved.
 
 use zeroize::Zeroizing;
 
 pub struct ClipboardManager {
     inner: Option<arboard::Clipboard>,
-    /// The last value we wrote, kept so we can verify before wiping.
+    /// The last value written, kept to verify ownership before wiping.
     last_set: Option<Zeroizing<String>>,
     init_error: Option<String>,
 }
@@ -77,8 +73,7 @@ impl ClipboardManager {
 
 impl Drop for ClipboardManager {
     fn drop(&mut self) {
-        // On exit, make a best-effort attempt to remove our secret from the
-        // clipboard so it does not outlive the program.
+        // Best effort so a copied key does not outlive the program.
         self.wipe_if_ours();
     }
 }
